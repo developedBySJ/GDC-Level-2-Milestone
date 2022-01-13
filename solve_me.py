@@ -1,9 +1,17 @@
+import sys
+
+
 class TasksCommand:
     TASKS_FILE = "tasks.txt"
     COMPLETED_TASKS_FILE = "completed.txt"
 
     current_items = {}
     completed_items = []
+
+    def __init__(self):
+        self.read_current()
+        self.completed_items = self.read_completed() or []
+        pass
 
     def read_current(self):
         try:
@@ -64,16 +72,74 @@ $ python tasks.py report # Statistics"""
         )
 
     def add(self, args):
+        [priority, text] = args
+        cur_priority = int(priority)
+        prev_task = text
+        while True:
+            if self.current_items.get(int(cur_priority)) == None:
+                self.current_items[int(cur_priority)] = f"{prev_task}"
+                break
+            else:
+                temp_prev_task = self.current_items[int(cur_priority)]
+                self.current_items[int(cur_priority)] = prev_task
+                prev_task = temp_prev_task
+                cur_priority += 1
+        print(f"Added task: \"{text}\" with priority {priority}")
+        self.write_current()
         pass
 
     def done(self, args):
+        priority = int(args[0])
+
+        if priority < 1 or not self.current_items.get(priority):
+            print(
+                f"Error: no incomplete item with priority {priority} exists.")
+            return
+
+        self.completed_items.append(self.current_items[priority])
+
+        del self.current_items[priority]
+        self.write_current()
+        self.write_completed()
+
+        print("Marked item as done.")
         pass
 
     def delete(self, args):
+        priority = int(args[0])
+
+        if priority < 1 or self.current_items.get(priority):
+            print(
+                f"Error: item with priority {priority} does not exist. Nothing deleted.")
+            return
+
+        del self.current_items[priority]
+        self.write_current()
+
+        print(f"Deleted item with priority {priority}")
         pass
 
     def ls(self):
+        count = 1
+        for priority in sorted(self.current_items):
+            text = self.current_items[priority]
+            print(f"{count}. {text} [{priority}]")
+            count += 1
         pass
 
     def report(self):
+        # Print pending
+        print(f"Pending : {len(self.current_items)}")
+        self.ls()
+        print()
+
+        # print completed
+        print(f"Completed : {len(self.completed_items)}")
+        self._print_completed()
+
+    def _print_completed(self):
+        count = 1
+        for task in self.completed_items:
+            print(f"{count}. {task}")
+            count += 1
         pass
