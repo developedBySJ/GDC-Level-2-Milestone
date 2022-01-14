@@ -43,7 +43,6 @@ def load_completed_file():
 
 class SimpleTest(unittest.TestCase):
     def setUp(self):
-        reset_files()
         self.command_object = TasksCommand()
 
     @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
@@ -60,7 +59,7 @@ class SimpleTest(unittest.TestCase):
             self.command_object.report()
         elif command == "help":
             self.command_object.help()
-        self.assertEqual(mock_stdout.getvalue()[:-1], expected_output)
+        self.assertIn(expected_output, mock_stdout.getvalue())
 
     def test_add_tasks(self):
         self.assert_stdout("add",["5", "Test Task 5"], "Added task: \"Test Task 5\" with priority 5")
@@ -101,4 +100,5 @@ class SimpleTest(unittest.TestCase):
     def test_report(self):
         self.assert_stdout("report", [], "Pending : 3\n1. Task 2 [2]\n2. Task 3 [3]\n3. Test Task 5 [5]\n\nCompleted : 1\n1. Task 10")
 
+reset_files()
 unittest.main()
